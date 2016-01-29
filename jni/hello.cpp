@@ -15,8 +15,8 @@ extern "C" {
 }
 
 // Set variables
-char* torrent_file = "/storage/extSdCard/Torrents/ubuntu-14.04-desktop-i386.iso.torrent";
-char* save_location = "/storage/extSdCard/Torrents/";
+char* torrent_file = "/storage/emulated/0/Torrents/ubuntu-14.04.3-desktop-i386.iso.torrent";
+char* save_location = "/storage/emulated/0/Torrents/";
 libtorrent::session s;
 libtorrent::add_torrent_params p;
 libtorrent::torrent_handle h;
