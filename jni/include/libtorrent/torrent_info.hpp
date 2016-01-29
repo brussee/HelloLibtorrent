@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -291,6 +291,12 @@ namespace libtorrent
 		// it's also used to hold the peer_connection
 		// pointer, when the web seed is connected
 		policy::ipv4_peer peer_info;
+
+		// if the web server doesn't support keepalive or a block request was
+		// interrupted, the block received so far is kept here for the next
+		// connection to pick up
+		peer_request restart_request;
+		std::vector<char> restart_piece;
 	};
 
 #ifndef BOOST_NO_EXCEPTIONS
@@ -303,43 +309,41 @@ namespace libtorrent
 	{
 	public:
 
-		// The constructor that takes an info-hash  will initialize the info-hash to the given value,
-		// but leave all other fields empty. This is used internally when downloading torrents without
-		// the metadata. The metadata will be created by libtorrent as soon as it has been downloaded
-		// from the swarm.
+		// The constructor that takes an info-hash  will initialize the info-hash
+		// to the given value, but leave all other fields empty. This is used
+		// internally when downloading torrents without the metadata. The
+		// metadata will be created by libtorrent as soon as it has been
+		// downloaded from the swarm.
 		// 
-		// The constructor that takes a lazy_entry will create a torrent_info object from the
-		// information found in the given torrent_file. The lazy_entry represents a tree node in
-		// an bencoded file. To load an ordinary .torrent file
-		// into a lazy_entry, use lazy_bdecode().
+		// The constructor that takes a lazy_entry will create a torrent_info
+		// object from the information found in the given torrent_file. The
+		// lazy_entry represents a tree node in an bencoded file. To load an
+		// ordinary .torrent file into a lazy_entry, use lazy_bdecode().
 		// 
-		// The version that takes a buffer pointer and a size will decode it as a .torrent file and
-		// initialize the torrent_info object for you.
+		// The version that takes a buffer pointer and a size will decode it as a
+		// .torrent file and initialize the torrent_info object for you.
 		// 
-		// The version that takes a filename will simply load the torrent file and decode it inside
-		// the constructor, for convenience. This might not be the most suitable for applications that
-		// want to be able to report detailed errors on what might go wrong.
+		// The version that takes a filename will simply load the torrent file
+		// and decode it inside the constructor, for convenience. This might not
+		// be the most suitable for applications that want to be able to report
+		// detailed errors on what might go wrong.
+		//
+		// There is an upper limit on the size of the torrent file that will be
+		// loaded by the overload taking a filename. If it's important that even
+		// very large torrent files are loaded, use one of the other overloads.
 		// 
-		// The overloads that takes an ``error_code const&`` never throws if an error occur, they
-		// will simply set the error code to describe what went wrong and not fully initialize the
-		// torrent_info object. The overloads that do not take the extra error_code parameter will
-		// always throw if an error occurs. These overloads are not available when building without
-		// exception support.
+		// The overloads that takes an ``error_code const&`` never throws if an
+		// error occur, they will simply set the error code to describe what went
+		// wrong and not fully initialize the torrent_info object. The overloads
+		// that do not take the extra error_code parameter will always throw if
+		// an error occurs. These overloads are not available when building
+		// without exception support.
 		// 
 		// The ``flags`` argument is currently unused.
 #ifndef BOOST_NO_EXCEPTIONS
 		torrent_info(lazy_entry const& torrent_file, int flags = 0);
 		torrent_info(char const* buffer, int size, int flags = 0);
 		torrent_info(std::string const& filename, int flags = 0);
-#ifndef TORRENT_NO_DEPRECATE
-#if TORRENT_USE_WSTRING
-		// all wstring APIs are deprecated since 0.16.11
-		// instead, use the wchar -> utf8 conversion functions
-		// and pass in utf8 strings
-		TORRENT_DEPRECATED_PREFIX
-		torrent_info(std::wstring const& filename, int flags = 0) TORRENT_DEPRECATED;
-#endif // TORRENT_USE_WSTRING
-#endif // TORRENT_NO_DEPRECATE
 #endif
 		torrent_info(torrent_info const& t, int flags = 0);
 		torrent_info(sha1_hash const& info_hash, int flags = 0);
@@ -353,6 +357,8 @@ namespace libtorrent
 		// and pass in utf8 strings
 		TORRENT_DEPRECATED_PREFIX
 		torrent_info(std::wstring const& filename, error_code& ec, int flags = 0) TORRENT_DEPRECATED;
+		TORRENT_DEPRECATED_PREFIX
+		torrent_info(std::wstring const& filename, int flags = 0) TORRENT_DEPRECATED;
 #endif // TORRENT_USE_WSTRING
 #endif // TORRENT_NO_DEPRECATE
 
@@ -444,7 +450,7 @@ namespace libtorrent
 		// insert custom HTTP headers in the requests to a specific web seed.
 		// 
 		// See http-seeding_ for more information.
- 		void add_url_seed(std::string const& url
+		void add_url_seed(std::string const& url
 			, std::string const& extern_auth = std::string()
 			, web_seed_entry::headers_t const& extra_headers = web_seed_entry::headers_t());
 		void add_http_seed(std::string const& url

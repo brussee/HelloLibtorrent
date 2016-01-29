@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2006-2014, Arvid Norberg
+Copyright (c) 2006-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -180,6 +180,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "libtorrent/buffer.hpp"
 #include "libtorrent/socket.hpp"
 #include "libtorrent/error_code.hpp"
+#include "libtorrent/policy.hpp" // for policy::peer
 
 namespace libtorrent
 {
@@ -196,6 +197,7 @@ namespace libtorrent
 	class alert;
 	struct torrent_plugin;
 	class torrent;
+	struct torrent_peer;
 
 	// this is the base class for a session plugin. One primary feature
 	// is that it is notified of all torrents that are added to the session,
@@ -226,6 +228,15 @@ namespace libtorrent
 
 		// called once per second
 		virtual void on_tick() {}
+
+		// called when choosing peers to optimisticly unchoke
+		// peer's will be unchoked in the order they appear in the given
+		// vector which is initiallity sorted by when they were last
+		// optimistically unchoked.
+		// if the plugin returns true then the ordering provided will be
+		// used and no other plugin will be allowed to change it.
+		virtual bool on_optimistic_unchoke(std::vector<policy::peer*>& /* peers */)
+		{ return false; }
 
 		// called when saving settings state
 		virtual void save_state(entry&) const {}
@@ -381,6 +392,9 @@ namespace libtorrent
 		virtual bool on_reject(peer_request const&) { return false; }
 		virtual bool on_suggest(int /*index*/) { return false; }
 
+		// called after a choke message has been sent to the peer
+		virtual void sent_unchoke() {}
+
 		// called when libtorrent think this peer should be disconnected.
 		// if the plugin returns false, the peer will not be disconnected.
 		virtual bool can_disconnect(error_code const& /*ec*/) { return true; }
@@ -388,8 +402,13 @@ namespace libtorrent
 		// called when an extended message is received. If returning true,
 		// the message is not processed by any other plugin and if false
 		// is returned the next plugin in the chain will receive it to
-		// be able to handle it
-		// this is not called for web seeds
+		// be able to handle it. This is not called for web seeds.
+		// thus function may be called more than once per incoming message, but
+		// only the last of the calls will the ``body`` size equal the ``length``.
+		// i.e. Every time another fragment of the message is received, this
+		// function will be called, until finally the whole message has been
+		// received. The purpose of this is to allow early disconnects for invalid
+		// messages and for reporting progress of receiving large messages.
 		virtual bool on_extended(int /*length*/, int /*msg*/,
 			buffer::const_interval /*body*/)
 		{ return false; }

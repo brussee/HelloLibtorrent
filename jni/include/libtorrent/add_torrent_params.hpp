@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2009-2014, Arvid Norberg
+Copyright (c) 2009-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -147,15 +147,16 @@ namespace libtorrent
 			// in there will override the seed mode you set here.
 			flag_seed_mode = 0x001,
 
-			// If ``flag_override_resume_data`` is set, the ``paused`` and
-			// ``auto_managed`` state of the torrent are not loaded from the
-			// resume data, but the states requested by the flags in
-			// ``add_torrent_params`` will override them.
-			//
-			// If you pass in resume data, the paused state of the torrent when
-			// the resume data was saved will override the paused state you pass
-			// in here. You can override this by setting
-			// ``flag_override_resume_data``.
+			// If ``flag_override_resume_data`` is set, flags set for this torrent
+			// in this ``add_torrent_params`` object will take precedence over
+			// whatever states are saved in the resume data. For instance, the
+			// ``paused``, ``auto_managed``, ``sequential_download``, ``seed_mode``,
+			// ``super_seeding``, ``max_uploads``, ``max_connections``,
+			// ``upload_limit`` and ``download_limit`` are all affected by this
+			// flag. The intention of this flag is to have any field in
+			// add_torrent_params configuring the torrent override the corresponding
+			// configuration from the resume file, with the one exception of save
+			// resume data, which has its own flag (for historic reasons).
 			flag_override_resume_data = 0x002,
 
 			// If ``flag_upload_mode`` is set, the torrent will be initialized in
@@ -226,7 +227,11 @@ namespace libtorrent
 
 			// defaults to off and specifies whether tracker URLs loaded from
 			// resume data should be added to the trackers in the torrent or
-			// replace the trackers.
+			// replace the trackers. When replacing trackers (i.e. this flag is not
+			// set), any trackers passed in via add_torrent_params are also
+			// replaced by any trackers in the resume data. The default behavior is
+			// to have the resume data override the .torrent file _and_ the
+			// trackers added in add_torrent_params.
 			flag_merge_resume_trackers = 0x100,
 
 			// on by default and means that this torrent will be part of state
@@ -244,13 +249,28 @@ namespace libtorrent
 			// the torrent handle immediately after adding it.
 			flag_sequential_download = 0x800,
 
+			// if this flag is set, the save path from the resume data file, if
+			// present, is honored. This defaults to not being set, in which
+			// case the save_path specified in add_torrent_params is always used.
+			flag_use_resume_save_path = 0x1000,
+
+			// defaults to off and specifies whether web seed URLs loaded from
+			// resume data should be added to the ones in the torrent file or
+			// replace them. No distinction is made between the two different kinds
+			// of web seeds (`BEP 17`_ and `BEP 19`_). When replacing web seeds
+			// (i.e. when this flag is not set), any web seeds passed in via
+			// add_torrent_params are also replaced. The default behavior is to
+			// have any web seeds in the resume data take presedence over whatever
+			// is passed in here as well as the .torrent file.
+			flag_merge_resume_http_seeds = 0x2000,
+
 			// internal
 			default_flags = flag_update_subscribe | flag_auto_managed | flag_paused | flag_apply_ip_filter
 #ifndef TORRENT_NO_DEPRECATE
 			, flag_ignore_flags = 0x80000000
 #endif
 		};
-	
+
 		// filled in by the constructor and should be left untouched. It
 		// is used for forward binary compatibility.
 		int version;
@@ -273,6 +293,16 @@ namespace libtorrent
 		// to the session (if DHT is enabled). The hostname may be an IP address.
 		std::vector<std::pair<std::string, int> > dht_nodes;
 		std::string name;
+
+		// the path where the torrent is or will be stored. Note that this may
+		// alos be stored in resume data. If you want the save path saved in
+		// the resume data to be used, you need to set the
+		// flag_use_resume_save_path flag.
+		//
+		// .. note::
+		// 	On windows this path (and other paths) are interpreted as UNC
+		// 	paths. This means they must use backslashes as directory separators
+		// 	and may not contain the special directories "." or "..".
 		std::string save_path;
 
 		// The optional parameter, ``resume_data`` can be given if up to date

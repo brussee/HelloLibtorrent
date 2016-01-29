@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -80,7 +80,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "libtorrent/peer_connection.hpp"
 #endif
 
-//#define TORRENT_DEBUG_STREAMING 1
+// define as 0 to disable. 1 enables debug output of the pieces and requested
+// blocks. 2 also enables trace output of the time critical piece picking
+// logic
+#define TORRENT_DEBUG_STREAMING 0
 
 namespace libtorrent
 {
@@ -120,7 +123,7 @@ namespace libtorrent
 		int peers;
 		// the piece index
 		int piece;
-#ifdef TORRENT_DEBUG_STREAMING
+#if TORRENT_DEBUG_STREAMING > 0
 		// the number of multiple requests are allowed
 		// to blocks still not downloaded (debugging only)
 		int timed_out;
@@ -147,11 +150,8 @@ namespace libtorrent
 		{ return m_obfuscated_hash; }
 #endif
 
-		sha1_hash const& info_hash() const
-		{
-			static sha1_hash empty;
-			return m_torrent_file ? m_torrent_file->info_hash() : empty;
-		}
+		// This may be called from multiple threads
+		sha1_hash const& info_hash() const { return m_info_hash; }
 	
 		bool is_deleted() const { return m_deleted; }
 
@@ -343,8 +343,10 @@ namespace libtorrent
 		void prioritize_files(std::vector<int> const& files);
 		void file_priorities(std::vector<int>*) const;
 
+		void cancel_non_critical();
 		void set_piece_deadline(int piece, int t, int flags);
 		void reset_piece_deadline(int piece);
+		void clear_time_critical();
 		void update_piece_priorities();
 
 		void status(torrent_status* st, boost::uint32_t flags);
@@ -544,7 +546,7 @@ namespace libtorrent
 		bool have_piece(int index) const
 		{
 			if (!valid_metadata()) return false;
-			if (!has_picker()) return true;
+			if (!has_picker()) return is_seed();
 			return m_picker->have_piece(index);
 		}
 
@@ -724,6 +726,7 @@ namespace libtorrent
 		{
 			return valid_metadata()
 				&& (!m_picker
+				|| m_seed_mode
 				|| m_state == torrent_status::seeding
 				|| m_picker->num_have() == m_picker->num_pieces());
 		}
@@ -734,6 +737,12 @@ namespace libtorrent
 			if (is_seed()) return true;
 			return valid_metadata() && m_torrent_file->num_pieces()
 				- m_picker->num_have() - m_picker->num_filtered() == 0;
+		}
+
+		bool is_inactive() const
+		{
+			if (!settings().dont_count_slow_torrents) return false;
+			return m_inactive;
 		}
 
 		std::string save_path() const;
@@ -838,7 +847,7 @@ namespace libtorrent
 		int sequence_number() const { return m_sequence_number; }
 
 		bool seed_mode() const { return m_seed_mode; }
-		void leave_seed_mode(bool seed);
+		void leave_seed_mode(bool skip_checking);
 
 		bool all_verified() const
 		{ return int(m_num_verified) == m_torrent_file->num_pieces(); }
@@ -1105,6 +1114,10 @@ namespace libtorrent
 		sha1_hash m_obfuscated_hash;
 #endif
 
+		// keep a copy if the info-hash here, so it can be accessed from multiple
+		// threads, and be cheap to access from the client
+		sha1_hash m_info_hash;
+
 		// the average time it takes to download one time critical piece
 		boost::uint32_t m_average_piece_time;
 		// the average piece download time deviation
@@ -1193,7 +1206,7 @@ namespace libtorrent
 
 		// this is set when we don't want to load seed_mode,
 		// paused or auto_managed from the resume data
-		bool m_override_resume_data:1;
+		const bool m_override_resume_data:1;
 
 		// this is true while there is a country
 		// resolution in progress. To avoid flodding
@@ -1333,7 +1346,10 @@ namespace libtorrent
 		// set to true while moving the storage
 		bool m_moving_storage:1;
 
-		// TODO: there's space for another bit here
+		// this is true if this torrent is considered inactive from the
+		// queuing mechanism's point of view. If a torrent doesn't transfer
+		// at high enough rates, it's inactive.
+		bool m_inactive:1;
 
 // ----
 
@@ -1401,6 +1417,22 @@ namespace libtorrent
 		// progress parts per million (the number of
 		// millionths of completeness)
 		unsigned int m_progress_ppm:20;
+
+		// the number of seconds this torrent has been under the inactive
+		// threshold in terms of sending and receiving data. When this counter
+		// reaches the settings.inactive_torrent_timeout it will be considered
+		// inactive and possibly open up another queue slot, to start another,
+		// queued, torrent. Every second it's above the threshold
+		boost::int16_t m_inactive_counter;
+
+		// if this is set, accept the save path saved in the resume data, if
+		// present
+		bool m_use_resume_save_path:1;
+
+		// if set to true, add web seed URLs loaded from resume
+		// data into this torrent instead of replacing the ones from the .torrent
+		// file
+		bool m_merge_resume_http_seeds:1;
 
 #if TORRENT_USE_ASSERTS
 	public:

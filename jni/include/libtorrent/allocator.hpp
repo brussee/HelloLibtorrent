@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2009-2014, Arvid Norberg
+Copyright (c) 2009-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -68,6 +68,8 @@ namespace libtorrent
 			h.m_buf =  tmp;
 		}
 	private:
+		aligned_holder(aligned_holder const&);
+		aligned_holder& operator=(aligned_holder const&);
 		char* m_buf;
 	};
 

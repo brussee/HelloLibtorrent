@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2007-2014, Arvid Norberg
+Copyright (c) 2007-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -116,7 +116,7 @@ private:
 		boost::function<void()> on_timeout;
 		ptime expires;
 		time_duration timeout;
-		boost::uint32_t ticket;
+		boost::int32_t ticket;
 		bool connecting;
 		boost::uint8_t priority;
 	};

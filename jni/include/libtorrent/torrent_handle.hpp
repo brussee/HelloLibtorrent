@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -315,7 +315,7 @@ namespace libtorrent
 			query_name = 64,
 			// includes ``save_path``, the path to the directory the files of the
 			// torrent are saved to.
-			query_save_path = 128,
+			query_save_path = 128
 		};
 
 		// ``status()`` will return a structure with information about the status
@@ -362,8 +362,12 @@ namespace libtorrent
 		// ``reset_piece_deadline`` removes the deadline from the piece. If it
 		// hasn't already been downloaded, it will no longer be considered a
 		// priority.
+		// 
+		// ``clear_piece_deadlines()`` removes deadlines on all pieces in
+		// the torrent. As if reset_piece_deadline() was called on all pieces.
 		void set_piece_deadline(int index, int deadline, int flags = 0) const;
 		void reset_piece_deadline(int index) const;
+		void clear_piece_deadlines() const;
 
 		// This sets the bandwidth priority of this torrent. The priority of a
 		// torrent determines how much bandwidth its peers are assigned when
@@ -652,7 +656,9 @@ namespace libtorrent
 		// download as well as when closing down.
 		// 
 		// Example code to pause and save resume data for all torrents and wait
-		// for the alerts::
+		// for the alerts:
+		// 
+		// .. code:: c++
 		// 
 		//	extern int outstanding_resume_data; // global counter of outstanding resume data
 		//	std::vector<torrent_handle> handles = ses.get_torrents();
@@ -767,7 +773,9 @@ namespace libtorrent
 		// certificate in the .torrent file to be valid.
 		//
 		// The set_ssl_certificate_buffer() overload takes the actual certificate,
-		// private key and DH params as strings, rather than paths to files.
+		// private key and DH params as strings, rather than paths to files. This
+		// overload is only available when libtorrent is built against boost
+		// 1.54 or later.
 		// 
 		// ``cert`` is a path to the (signed) certificate in .pem format
 		// corresponding to this torrent.
@@ -959,7 +967,7 @@ namespace libtorrent
 		// The priority values are the same as for piece_priority().
 		// 
 		// Whenever a file priority is changed, all other piece priorities are
-		// reset to match the file priorities. In order to maintain sepcial
+		// reset to match the file priorities. In order to maintain special
 		// priorities for particular pieces, piece_priority() has to be called
 		// again for those pieces.
 		// 
@@ -1138,11 +1146,13 @@ namespace libtorrent
 #endif // TORRENT_USE_WSTRING
 #endif // TORRENT_NO_DEPRECATE
 
-		// Enables or disabled super seeding/initial seeding for this torrent. The torrent
-		// needs to be a seed for this to take effect.
+		// Enables or disabled super seeding/initial seeding for this torrent.
+		// The torrent needs to be a seed for this to take effect.
 		void super_seeding(bool on) const;
 
-		// ``info_hash()`` returns the info-hash for the torrent.
+		// ``info_hash()`` returns the info-hash of the torrent. If this handle
+		// is to a torrent that hasn't loaded yet (for instance by being added)
+		// by a URL, the returned value is undefined.
 		sha1_hash info_hash() const;
 
 		// comparison operators. The order of the torrents is unspecified
@@ -1278,13 +1288,16 @@ namespace libtorrent
 
 		// counts the amount of bytes send and received this session, but only
 		// the actual payload data (i.e the interesting data), these counters
-		// ignore any protocol overhead.
+		// ignore any protocol overhead. The session is considered to restart
+		// when a torrent is paused and restarted again. When a torrent is
+		// paused, these counters are reset to 0.
 		size_type total_payload_download;
 		size_type total_payload_upload;
 
 		// the number of bytes that has been downloaded and that has failed the
 		// piece hash test. In other words, this is just how much crap that has
-		// been downloaded.
+		// been downloaded since the torrent was last started. If a torrent is
+		// paused and then restarted again, this counter will be reset.
 		size_type total_failed_bytes;
 
 		// the number of bytes that has been downloaded even though that data
@@ -1295,7 +1308,9 @@ namespace libtorrent
 		// situation when libtorrent may re-request blocks is when the requests
 		// it sends out are not replied in FIFO-order (it will re-request blocks
 		// that are skipped by an out of order block). This is supposed to be as
-		// low as possible.
+		// low as possible. This only counts bytes since the torrent was last
+		// started. If a torrent is paused and then restarted again, this counter
+		// will be reset.
 		size_type total_redundant_bytes;
 
 		// a bitmask that represents which pieces we have (set to true) and the

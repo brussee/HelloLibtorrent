@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,8 @@ namespace libtorrent
 
 		// the type of proxy to use. Assign one of these to the
 		// proxy_settings::type field.
-		enum proxy_type {
+		enum proxy_type
+		{
 			// This is the default, no proxy server is used, all other fields are
 			// ignored.
 			none,
@@ -98,8 +99,7 @@ namespace libtorrent
 			// proxy will suffice. The proxy is assumed to not require
 			// authorization. The username and password will not be used.
 			//
-			// .. _CONNECT:
-			// http://tools.ietf.org/html/draft-luotonen-web-proxy-tunneling-01
+			// .. _CONNECT: http://tools.ietf.org/html/draft-luotonen-web-proxy-tunneling-01
 			http,
 
 			// The server is assumed to be an HTTP proxy that requires user
@@ -324,13 +324,15 @@ namespace libtorrent
 		int allowed_fast_set_size;
 
 		// options for session_settings::suggest_mode.
-		enum suggest_mode_t {
+		enum suggest_mode_t
+		{
 			// the default. will not send out suggest messages.
 			no_piece_suggestions = 0,
 
 			// send out suggest messages for the most recent pieces that are in
 			// the read cache.
-			suggest_read_cache = 1 };
+			suggest_read_cache = 1
+		};
 
 		// this determines which pieces will be suggested to peers suggest read
 		// cache will make libtorrent suggest pieces that are fresh in the disk
@@ -433,7 +435,8 @@ namespace libtorrent
 
 		// the different choking algorithms available. Set
 		// session_settings::choking_algorithm to one of these
-		enum choking_algorithm_t {
+		enum choking_algorithm_t
+		{
 			// the traditional choker with a fixed number of unchoke slots, as
 			// specified by session::set_max_uploads()..
 			fixed_slots_choker,
@@ -457,7 +460,8 @@ namespace libtorrent
 			// this choker, see the paper_.
 			// 
 			// .. _paper: http://bittyrant.cs.washington.edu/#papers
-			bittyrant_choker };
+			bittyrant_choker 
+		};
 
 		// specifies which algorithm to use to determine which peers to unchoke.
 		// This setting replaces the deprecated settings ``auto_upload_slots``
@@ -467,7 +471,8 @@ namespace libtorrent
 
 		// the different choking algorithms available when seeding. Set
 		// session_settings::seed_choking_algorithm to one of these
-		enum seed_choking_algorithm_t {
+		enum seed_choking_algorithm_t
+		{
 			// round-robins the peers that are unchoked when seeding. This
 			// distributes the upload bandwidht uniformly and fairly. It minimizes
 			// the ability for a peer to download everything without
@@ -481,7 +486,8 @@ namespace libtorrent
 			// prioritizes peers who have just started or are just about to finish
 			// the download. The intention is to force peers in the middle of the
 			// download to trade with each other.
-			anti_leech };
+			anti_leech
+		};
  
 		// controls the seeding unchoke behavior. For options, see
 		// seed_choking_algorithm_t.
@@ -508,7 +514,9 @@ namespace libtorrent
 		// blocks that are allocated at a time when the pool needs to grow can be
 		// specified in ``cache_buffer_chunk_size``. This defaults to 16 blocks.
 		// Lower numbers saves memory at the expense of more heap allocations. It
-		// must be at least 1.
+		// must be at least 1. When built in 32 bit mode, the effective cache size
+		// will be capped at 3/4 of 2 GiB. This is to avoid exceeding the virtual
+		// address space limitations.
 		int cache_size;
 
 		// this is the number of disk buffer blocks (16 kiB) that should be
@@ -1219,7 +1227,6 @@ namespace libtorrent
 			// does not throttle uTP, throttles TCP to the same proportion
 			// of throughput as there are TCP connections
 			peer_proportional = 1
-
 		};
 
 		// determines how to treat TCP connections when there are uTP
@@ -1283,7 +1290,7 @@ namespace libtorrent
 		int alert_queue_size;
 
 		// the maximum allowed size (in bytes) to be received
-		// by the metadata extension, i.e. magnet links. It defaults to 1 MiB.
+		// by the metadata extension, i.e. magnet links. It defaults to 3 MiB.
 		int max_metadata_size;
 
 		// true by default, which means the number of connection attempts per
@@ -1383,6 +1390,15 @@ namespace libtorrent
 		// side effect that the disk cache is less likely and slower at returning
 		// memory to the kernel when cache pressure is low.
 		bool use_disk_cache_pool;
+
+		// the download and upload rate limits for a torrent to be considered
+		// active by the queuing mechanism. A torrent whose download rate is less
+		// than ``inactive_down_rate`` and whose upload rate is less than
+		// ``inactive_up_rate`` for ``auto_manage_startup`` seconds, is
+		// considered inactive, and another queued torrent may be startert.
+		// This logic is disabled if ``dont_count_slow_torrents`` is false.
+		int inactive_down_rate;
+		int inactive_up_rate;
 	};
 
 	// structure used to hold configuration options for the DHT
@@ -1412,7 +1428,7 @@ namespace libtorrent
 			, enforce_node_id(false)
 			, ignore_dark_internet(true)
 		{}
-		
+
 		// the maximum number of peers to send in a reply to ``get_peers``
 		int max_peers_reply;
 
@@ -1420,13 +1436,13 @@ namespace libtorrent
 		// announcing and refreshing the routing table. This parameter is called
 		// alpha in the kademlia paper
 		int search_branching;
-		
+
 #ifndef TORRENT_NO_DEPRECATE
 		// the listen port for the dht. This is a UDP port. zero means use the
 		// same as the tcp interface
 		int service_port;
 #endif
-		
+
 		// the maximum number of failed tries to contact a node before it is
 		// removed from the routing table. If there are known working nodes that
 		// are ready to replace a failing node, it will be replaced immediately,

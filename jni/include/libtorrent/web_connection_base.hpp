@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -116,8 +116,7 @@ namespace libtorrent
 		void write_interested() {}
 		void write_not_interested() {}
 		virtual void write_request(peer_request const& r) = 0;
-		void write_cancel(peer_request const& r)
-		{ incoming_reject_request(r); }
+		void write_cancel(peer_request const& r) {}
 		void write_have(int index) {}
 		void write_piece(peer_request const& r, disk_buffer_holder& buffer) { TORRENT_ASSERT(false); }
 		void write_keepalive() {}

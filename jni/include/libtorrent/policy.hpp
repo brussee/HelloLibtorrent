@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -95,7 +95,7 @@ namespace libtorrent
 	enum
 	{
 		// the limits of the download queue size
-		min_request_queue = 2,
+		min_request_queue = 2
 	};
 
 	// calculate the priority of a peer based on its address. One of the
@@ -345,7 +345,7 @@ namespace libtorrent
 		};
 #endif
 
-		int num_peers() const { return m_peers.size(); }
+		int num_peers() const { return int(m_peers.size()); }
 
 		struct peer_address_compare
 		{

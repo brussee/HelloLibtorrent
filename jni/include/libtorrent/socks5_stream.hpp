@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2007-2014, Arvid Norberg
+Copyright (c) 2007-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -42,31 +42,34 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 namespace libtorrent {
+namespace socks_error {
 
-	namespace socks_error {
+	// SOCKS5 error values. If an error_code has the
+	// socks error category (get_socks_category()), these
+	// are the error values.
+	enum socks_error_code
+	{
+		no_error = 0,
+		unsupported_version,
+		unsupported_authentication_method,
+		unsupported_authentication_version,
+		authentication_error,
+		username_required,
+		general_failure,
+		command_not_supported,
+		no_identd,
+		identd_error,
 
-		// SOCKS5 error values. If an error_code has the
-		// socks error category (get_socks_category()), these
-		// are the error values.
-		enum socks_error_code
-		{
-			no_error = 0,
-			unsupported_version,
-			unsupported_authentication_method,
-			unsupported_authentication_version,
-			authentication_error,
-			username_required,
-			general_failure,
-			command_not_supported,
-			no_identd,
-			identd_error,
+		num_errors
+	};
 
-			num_errors
-		};
-	}
+	// internal
+	TORRENT_EXPORT boost::system::error_code make_error_code(socks_error_code e);
 
-	// returns the error_category for SOCKS5 errors
-	TORRENT_EXPORT boost::system::error_category& get_socks_category();
+} // namespace socks_error
+
+// returns the error_category for SOCKS5 errors
+TORRENT_EXPORT boost::system::error_category& get_socks_category();
 
 class socks5_stream : public proxy_base
 {
@@ -171,6 +174,19 @@ private:
 };
 
 }
+
+#if BOOST_VERSION >= 103500
+
+namespace boost { namespace system {
+
+	template<> struct is_error_code_enum<libtorrent::socks_error::socks_error_code>
+	{ static const bool value = true; };
+
+	template<> struct is_error_condition_enum<libtorrent::socks_error::socks_error_code>
+	{ static const bool value = true; };
+} }
+
+#endif // BOOST_VERSION
 
 #endif
 

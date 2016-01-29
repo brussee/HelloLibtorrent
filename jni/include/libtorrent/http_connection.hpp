@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2007-2014, Arvid Norberg
+Copyright (c) 2007-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -139,7 +139,7 @@ private:
 		, error_code const& e);
 	void on_assign_bandwidth(error_code const& e);
 
-	void callback(error_code e, char const* data = 0, int size = 0);
+	void callback(error_code e, char* data = 0, int size = 0);
 
 	std::vector<char> m_recvbuffer;
 	socket_type m_sock;

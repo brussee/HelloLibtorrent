@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2006-2014, Arvid Norberg & Daniel Wallin
+Copyright (c) 2006-2016, Arvid Norberg & Daniel Wallin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -43,32 +43,23 @@ namespace libtorrent { namespace dht
 class routing_table;
 class rpc_manager;
 
-class refresh : public get_peers
+class bootstrap : public get_peers
 {
 public:
 	typedef get_peers::nodes_callback done_callback;
 
-	refresh(node_impl& node, node_id target
+	bootstrap(node_impl& node, node_id target
 		, done_callback const& callback);
-
 	virtual char const* name() const;
-
-protected:
 
 	observer_ptr new_observer(void* ptr, udp::endpoint const& ep
 		, node_id const& id);
-	virtual bool invoke(observer_ptr o);
-};
 
-class bootstrap : public refresh
-{
-public:
-	bootstrap(node_impl& node, node_id target
-		, done_callback const& callback);
-
-	virtual char const* name() const;
+	void trim_seed_nodes();
 
 protected:
+
+	virtual bool invoke(observer_ptr o);
 
 	virtual void done();
 

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ POSSIBILITY OF SUCH DAMAGE.
 // ``std::map``, i.e. in RAM. It's not necessarily very useful in practice, but
 // illustrates the basics of implementing a custom storage.
 //
-//::
+// .. code:: c++
 //
 //	struct temp_storage : storage_interface
 //	{
@@ -433,6 +433,7 @@ namespace libtorrent
 		// hidden
 		~default_storage();
 
+		// hidden
 		void set_file_priority(std::vector<boost::uint8_t> const& prio);
 #ifndef TORRENT_NO_DEPRECATE
 		void finalize_file(int file);
@@ -522,7 +523,7 @@ namespace libtorrent
 	{
 	public:
 		disabled_storage(int piece_size) : m_piece_size(piece_size) {}
-		void set_file_priority(std::vector<boost::uint8_t> const& prio) {}
+		void set_file_priority(std::vector<boost::uint8_t> const&) {}
 		bool has_any_file() { return false; }
 		bool rename_file(int, std::string const&) { return false; }
 		bool release_files() { return false; }
@@ -561,7 +562,7 @@ namespace libtorrent
 
 		// if any file exist in the target, take those files instead
 		// of the ones we may have in the source.
-		dont_replace,
+		dont_replace
 	};
 
 	struct disk_io_thread;
@@ -651,7 +652,7 @@ namespace libtorrent
 			need_full_check = -1,
 			fatal_disk_error = -2,
 			disk_check_aborted = -3,
-			file_exist = -4,
+			file_exist = -4
 		};
 
 		storage_interface* get_storage_impl() { return m_storage.get(); }

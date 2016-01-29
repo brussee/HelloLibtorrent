@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2009-2014, Arvid Norberg
+Copyright (c) 2009-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -110,7 +110,7 @@ namespace libtorrent
 			invalid_pkts_in,
 			redundant_pkts_in,
 
-			num_counters,
+			num_counters
 		};
 
 		// used to keep stats of uTP events

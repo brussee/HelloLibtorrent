@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2006-2014, Arvid Norberg & Daniel Wallin
+Copyright (c) 2006-2016, Arvid Norberg & Daniel Wallin
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -83,6 +83,8 @@ struct traversal_algorithm : boost::noncopyable
 	traversal_algorithm(node_impl& node, node_id target);
 	int invoke_count() const { return m_invoke_count; }
 	int branch_factor() const { return m_branch_factor; }
+
+	node_impl& node() const { return m_node; }
 
 protected:
 

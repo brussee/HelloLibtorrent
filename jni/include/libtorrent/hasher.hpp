@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -106,7 +106,7 @@ namespace libtorrent
 #endif
 
 		// append the following bytes to what is being hashed
-		hasher& update(std::string const& data) { update(data.c_str(), data.size()); return *this; }
+		hasher& update(std::string const& data) { update(data.c_str(), int(data.size())); return *this; }
 		hasher& update(const char* data, int len);
 		
 		// returns the SHA-1 digest of the buffers previously passed to

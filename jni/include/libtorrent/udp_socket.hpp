@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2007-2014, Arvid Norberg
+Copyright (c) 2007-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -138,6 +138,11 @@ namespace libtorrent
 
 		struct queued_packet
 		{
+			queued_packet()
+				: hostname(NULL)
+				, flags(0)
+			{}
+
 			udp::endpoint ep;
 			char* hostname;
 			buffer buf;
@@ -150,12 +155,16 @@ namespace libtorrent
 		{
 			return m_v4_outstanding
 #if TORRENT_USE_IPV6
-			  	+ m_v6_outstanding
+				+ m_v6_outstanding
 #endif
 				;
 		}
 
 	private:
+
+		// non-copyable
+		udp_socket(udp_socket const&);
+		udp_socket& operator=(udp_socket const&);
 
 		// observers on this udp socket
 		std::vector<udp_socket_observer*> m_observers;
@@ -185,7 +194,7 @@ namespace libtorrent
 		void on_name_lookup(error_code const& e, tcp::resolver::iterator i);
 		void on_timeout();
 		void on_connect(int ticket);
-		void on_connected(error_code const& ec);
+		void on_connected(error_code const& ec, int ticket);
 		void handshake1(error_code const& e);
 		void handshake2(error_code const& e);
 		void handshake3(error_code const& e);

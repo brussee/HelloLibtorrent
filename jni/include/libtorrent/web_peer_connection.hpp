@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,8 @@ namespace libtorrent
 			, tcp::endpoint const& remote
 			, web_seed_entry& web);
 
+		virtual void on_connected();
+
 		virtual int type() const { return peer_connection::url_seed_connection; }
 
 		// called from the main loop when this connection has any
@@ -98,7 +100,7 @@ namespace libtorrent
 		virtual void get_specific_peer_info(peer_info& p) const;
 		virtual void disconnect(error_code const& ec, int error = 0);
 
-		void write_request(peer_request const& r);
+		virtual void write_request(peer_request const& r);
 
 		virtual bool received_invalid_data(int index, bool single_peer);
 
@@ -113,13 +115,15 @@ namespace libtorrent
 		// will be invalid.
 		boost::optional<piece_block_progress> downloading_piece_progress() const;
 
+		void handle_padfile(buffer::const_interval& recv_buffer);
+
 		// this has one entry per http-request
 		// (might be more than the bt requests)
 		std::deque<int> m_file_requests;
 
 		std::string m_url;
 	
-		web_seed_entry& m_web;
+		web_seed_entry* m_web;
 			
 		// this is used for intermediate storage of pieces
 		// that are received in more than one HTTP response

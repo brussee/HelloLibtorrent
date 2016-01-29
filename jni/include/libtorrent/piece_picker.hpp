@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -59,6 +59,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <set>
 #endif
 
+//#define TORRENT_PICKER_LOG
+
 namespace libtorrent
 {
 
@@ -71,15 +73,13 @@ namespace libtorrent
 		const static piece_block invalid;
 
 		piece_block() {}
-		piece_block(boost::uint32_t p_index, boost::uint16_t b_index)
+		piece_block(int p_index, int b_index)
 			: piece_index(p_index)
 			, block_index(b_index)
 		{
-			TORRENT_ASSERT(p_index < (1 << 19));
-			TORRENT_ASSERT(b_index < (1 << 13));
 		}
-		boost::uint32_t piece_index:19;
-		boost::uint32_t block_index:13;
+		int piece_index;
+		int block_index;
 
 		bool operator<(piece_block const& b) const
 		{
@@ -93,7 +93,6 @@ namespace libtorrent
 
 		bool operator!=(piece_block const& b) const
 		{ return piece_index != b.piece_index || block_index != b.block_index; }
-
 	};
 
 	class TORRENT_EXTRA_EXPORT piece_picker
@@ -644,8 +643,7 @@ namespace libtorrent
 #if TORRENT_COMPACT_PICKER
 		enum { max_pieces = piece_pos::we_have_index - 1 };
 #else
-		// still limited by piece_block
-		enum { max_pieces = (1 << 19) - 2 };
+		enum { max_pieces = INT_MAX - 1 };
 #endif
 
 	};

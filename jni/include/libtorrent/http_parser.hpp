@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2008-2014, Arvid Norberg
+Copyright (c) 2008-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,9 @@ namespace libtorrent
 
 	// return true if the status code is a redirect
 	bool is_redirect(int http_status);
+
+	TORRENT_EXTRA_EXPORT std::string resolve_redirect_location(std::string referrer
+		, std::string location);
 
 	class TORRENT_EXTRA_EXPORT http_parser
 	{

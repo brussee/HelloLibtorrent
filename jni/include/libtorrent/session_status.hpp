@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2006-2014, Arvid Norberg
+Copyright (c) 2006-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -93,8 +93,10 @@ namespace libtorrent
 		int num_nodes;
 		int num_replacements;
 
+#ifndef TORRENT_NO_DEPRECATE
 		// number of seconds since last activity
 		int last_active;
+#endif
 	};
 
 	// holds counters and gauges for the uTP sockets

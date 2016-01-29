@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -227,6 +227,9 @@ namespace libtorrent
 		lazy_entry* dict_find(char const* name);
 		lazy_entry const* dict_find(char const* name) const
 		{ return const_cast<lazy_entry*>(this)->dict_find(name); }
+		lazy_entry* dict_find(std::string const& name);
+		lazy_entry const* dict_find(std::string const& name) const
+		{ return const_cast<lazy_entry*>(this)->dict_find(name); }
 		lazy_entry const* dict_find_string(char const* name) const;
 
 		// if this is a dictionary, look for a key ``name`` whose value
@@ -248,6 +251,7 @@ namespace libtorrent
 		// if no key with the corresponding value of the right type is
 		// found, NULL is returned.
 		lazy_entry const* dict_find_dict(char const* name) const;
+		lazy_entry const* dict_find_dict(std::string const& name) const;
 		lazy_entry const* dict_find_list(char const* name) const;
 
 		// if this is a dictionary, return the key value pair at
@@ -313,7 +317,8 @@ namespace libtorrent
 		void set_end(char const* end)
 		{
 			TORRENT_ASSERT(end > m_begin);
-			m_len = end - m_begin;
+			TORRENT_ASSERT(end - m_begin < INT_MAX);
+			m_len = int(end - m_begin);
 		}
 		
 		// internal
@@ -422,10 +427,7 @@ namespace libtorrent
 		};
 
 		// hidden
-		inline boost::system::error_code make_error_code(error_code_enum e)
-		{
-			return boost::system::error_code(e, get_bdecode_category());
-		}
+		TORRENT_EXPORT boost::system::error_code make_error_code(error_code_enum e);
 	}
 
 	TORRENT_EXTRA_EXPORT char const* parse_int(char const* start
@@ -433,6 +435,19 @@ namespace libtorrent
 		, bdecode_errors::error_code_enum& ec);
 
 }
+
+#if BOOST_VERSION >= 103500
+
+namespace boost { namespace system {
+
+	template<> struct is_error_code_enum<libtorrent::bdecode_errors::error_code_enum>
+	{ static const bool value = true; };
+
+	template<> struct is_error_condition_enum<libtorrent::bdecode_errors::error_code_enum>
+	{ static const bool value = true; };
+} }
+
+#endif
 
 #endif
 

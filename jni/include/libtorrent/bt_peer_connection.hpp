@@ -1,7 +1,7 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
-Copyright (c) 2007-2014, Arvid Norberg, Un Shyam
+Copyright (c) 2003-2016, Arvid Norberg
+Copyright (c) 2007-2016, Arvid Norberg, Un Shyam
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -105,7 +105,7 @@ namespace libtorrent
 			// recommend_msg = 5,
 			// comment_msg = 6,
 			dont_have_msg = 7,
-			share_mode_msg = 8,
+			share_mode_msg = 8
 		};
 
 		~bt_peer_connection();

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2005-2014, Arvid Norberg
+Copyright (c) 2005-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef __STDC_CONSTANT_MACROS
 #define __STDC_CONSTANT_MACROS 1
 #endif
-#else
-#if !defined INT64_MAX
-#define INT64_MAX 0x7fffffffffffffffLL
-#endif
 #endif
 
 #include <boost/config.hpp>
@@ -52,23 +48,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h> // for snprintf
 #include <limits.h> // for IOV_MAX
 
+#include "libtorrent/export.hpp"
+
 #if defined TORRENT_DEBUG_BUFFERS && !defined TORRENT_DISABLE_POOL_ALLOCATOR
 #error TORRENT_DEBUG_BUFFERS only works if you also disable pool allocators with TORRENT_DISABLE_POOL_ALLOCATOR
 #endif
 
 #if !defined BOOST_ASIO_SEPARATE_COMPILATION && !defined BOOST_ASIO_DYN_LINK
-#error you must define either BOOST_ASIO_SEPARATE_COMPILATION or BOOST_ASIO_DYN_LINK in your project in \
-	order for asios declarations to be correct. If you are linking dynamically against libtorrent, define \
-	BOOST_ASIO_DYN_LINK otherwise BOOST_ASIO_SEPARATE_COMPILATION. You can also use pkg-config or boost \
-	build, to automatically apply these defines
-#endif
-
-#if !defined _MSC_VER || _MSC_VER >= 1600
-#include <stdint.h> // for INT64_MAX
-#else
-#if !defined INT64_MAX
-#define INT64_MAX 0x7fffffffffffffffLL
-#endif
+#define BOOST_ASIO_SEPARATE_COMPILATION
 #endif
 
 #ifndef _MSC_VER
@@ -91,40 +78,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #define PRIx64 "llx"
 #define PRIu32 "u"
 #endif
-#endif
-
-// backwards compatibility with older versions of boost
-#if !defined BOOST_SYMBOL_EXPORT && !defined BOOST_SYMBOL_IMPORT
-# if defined _MSC_VER || defined __MINGW32__
-#  define BOOST_SYMBOL_EXPORT __declspec(dllexport)
-#  define BOOST_SYMBOL_IMPORT __declspec(dllimport)
-# elif __GNU__ >= 4
-#  define BOOST_SYMBOL_EXPORT __attribute__((visibility("default")))
-#  define BOOST_SYMBOL_IMPORT __attribute__((visibility("default")))
-# else
-#  define BOOST_SYMBOL_EXPORT
-#  define BOOST_SYMBOL_IMPORT
-# endif
-#endif
-
-#if defined TORRENT_BUILDING_SHARED
-# define TORRENT_EXPORT BOOST_SYMBOL_EXPORT
-#elif defined TORRENT_LINKING_SHARED
-# define TORRENT_EXPORT BOOST_SYMBOL_IMPORT
-#endif
-
-// when this is specified, export a bunch of extra
-// symbols, mostly for the unit tests to reach
-#if TORRENT_EXPORT_EXTRA
-# if defined TORRENT_BUILDING_SHARED
-#  define TORRENT_EXTRA_EXPORT BOOST_SYMBOL_EXPORT
-# elif defined TORRENT_LINKING_SHARED
-#  define TORRENT_EXTRA_EXPORT BOOST_SYMBOL_IMPORT
-# endif
-#endif
-
-#ifndef TORRENT_EXTRA_EXPORT
-# define TORRENT_EXTRA_EXPORT
 #endif
 
 // ======= GCC =========
@@ -240,6 +193,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #else
 #define TORRENT_USE_IFADDRS 1
 #define TORRENT_USE_POSIX_MEMALIGN 1
+
+// posix_fallocate() is available under this condition
+#if _XOPEN_SOURCE >= 600 || _POSIX_C_SOURCE >= 200112L
+#define TORRENT_HAS_FALLOCATE 1
+#else
+#define TORRENT_HAS_FALLOCATE 0
+#endif
+
 #endif
 
 #if __amd64__ || __i386__
@@ -318,7 +279,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #define TORRENT_USE_READV 0
 
 #else
-#warning unknown OS, assuming BSD
+
+#ifdef _MSC_VER
+#pragma message ( "unknown OS, assuming BSD" )
+#else
+#warning "unknown OS, assuming BSD"
+#endif
+
 #define TORRENT_BSD
 #endif
 
@@ -338,20 +305,22 @@ POSSIBILITY OF SUCH DAMAGE.
 #elif defined MAXPATH
 #define TORRENT_MAX_PATH MAXPATH
 
-// posix
-#elif defined NAME_MAX
-#define TORRENT_MAX_PATH NAME_MAX
-
 // none of the above
 #else
 // this is the maximum number of characters in a
-// path element / filename on windows
+// path element / filename on windows and also on many filesystems commonly used
+// on linux
 #define TORRENT_MAX_PATH 255
-#warning unknown platform, assuming the longest path is 255
+
+#ifdef _MSC_VER
+#pragma message ( "unknown platform, assuming the longest path is 255" )
+#else
+#warning "unknown platform, assuming the longest path is 255"
+#endif
 
 #endif
 
-#if defined TORRENT_WINDOWS && !defined TORRENT_MINGW
+#if (defined _MSC_VER && _MSC_VER < 1900) && !defined TORRENT_MINGW
 
 #include <stdarg.h>
 
@@ -373,8 +342,6 @@ int snprintf(char* buf, int len, char const* fmt, ...)
 }
 
 #define strtoll _strtoi64
-#else
-#include <limits.h>
 #endif
 
 #if (defined(TORRENT_LOGGING) || defined(TORRENT_VERBOSE_LOGGING)) \
@@ -441,10 +408,6 @@ int snprintf(char* buf, int len, char const* fmt, ...)
 
 #ifndef TORRENT_HAS_FALLOCATE
 #define TORRENT_HAS_FALLOCATE 1
-#endif
-
-#ifndef TORRENT_EXPORT
-# define TORRENT_EXPORT
 #endif
 
 #ifndef TORRENT_DEPRECATED_PREFIX
@@ -598,10 +561,12 @@ int snprintf(char* buf, int len, char const* fmt, ...)
 #ifdef BOOST_NO_EXCEPTIONS
 #define TORRENT_TRY if (true)
 #define TORRENT_CATCH(x) else if (false)
+#define TORRENT_CATCH_ALL else if (false)
 #define TORRENT_DECLARE_DUMMY(x, y) x y
 #else
 #define TORRENT_TRY try
 #define TORRENT_CATCH(x) catch(x)
+#define TORRENT_CATCH_ALL catch(...)
 #define TORRENT_DECLARE_DUMMY(x, y)
 #endif // BOOST_NO_EXCEPTIONS
 

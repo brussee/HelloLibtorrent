@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2009-2014, Arvid Norberg
+Copyright (c) 2009-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,9 @@ namespace libtorrent {
 			duplicated_id,
 			num_errors
 		};
+
+		// hidden
+		TORRENT_EXPORT boost::system::error_code make_error_code(i2p_error_code e);
 	}
 
 	// returns the error category for I2P errors
@@ -188,7 +191,8 @@ private:
 		, name_lookup_handler handler
 		, boost::shared_ptr<i2p_stream>);
 
-	void set_local_endpoint(error_code const& ec, char const* dest);
+	void set_local_endpoint(error_code const& ec, char const* dest
+		, i2p_stream::handler_type const& h);
 
 	// to talk to i2p SAM bridge
 	boost::shared_ptr<i2p_stream> m_sam_socket;
@@ -213,6 +217,21 @@ private:
 };
 
 }
+
+#if BOOST_VERSION >= 103500
+namespace boost { namespace system {
+
+template<>
+struct is_error_code_enum<libtorrent::i2p_error::i2p_error_code>
+{ static const bool value = true; };
+
+template<>
+struct is_error_condition_enum<libtorrent::i2p_error::i2p_error_code>
+{ static const bool value = true; };
+
+} }
+#endif // BOOST_VERSION
+
 #endif // TORRENT_USE_I2P
 
 #endif

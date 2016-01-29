@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2008-2014, Arvid Norberg
+Copyright (c) 2008-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -81,7 +81,9 @@ POSSIBILITY OF SUCH DAMAGE.
 // All of these classes and functions are declared by including
 // ``libtorrent/create_torrent.hpp``.
 // 
-// example::
+// example:
+//
+// .. code:: c++
 // 
 //	file_storage fs;
 //
@@ -121,7 +123,7 @@ namespace libtorrent
 			// not grow with more pieces. When this option is specified, it is
 			// recommended to have a fairly small piece size, say 64 kiB.
 			// When creating merkle torrents, the full hash tree is also generated
-			// and should be saved off separately. It is accessed through the 
+			// and should be saved off separately. It is accessed through the
 			// create_torrent::merkle_tree() function.
 			, merkle = 2
 
@@ -166,11 +168,11 @@ namespace libtorrent
 		// The ``flags`` arguments specifies options for the torrent creation. It can
 		// be any combination of the flags defined by create_torrent::flags_t.
 		// 
-		// ``alignment`` is used when pad files are enabled. This is the size eligible
-		// files are aligned to. The default is the default bittorrent block size of
-		// 16 kiB. It is common to align to the piece size of the torrent.
+		// ``alignment`` is used when pad files are enabled. This is the size
+		// eligible files are aligned to. The default is -1, which means the
+		// piece size of the torrent.
 		create_torrent(file_storage& fs, int piece_size = 0
-			, int pad_file_limit = -1, int flags = optimize, int alignment = 0x4000);
+			, int pad_file_limit = -1, int flags = optimize, int alignment = -1);
 		create_torrent(torrent_info const& ti);
 
 		// internal
@@ -184,7 +186,9 @@ namespace libtorrent
 		// 
 		// If anything goes wrong during torrent generation, this function will return
 		// an empty ``entry`` structure. You can test for this condition by querying the
-		// type of the entry::
+		// type of the entry:
+		//
+		// .. code:: c++
 		// 
 		//	file_storage fs;
 		//	// add file ...

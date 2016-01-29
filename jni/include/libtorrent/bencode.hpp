@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -102,12 +102,15 @@ POSSIBILITY OF SUCH DAMAGE.
 namespace libtorrent
 {
 
+#ifndef TORRENT_NO_DEPRECATE
 	// thrown by bdecode() if the provided bencoded buffer does not contain
 	// valid encoding.
 	struct TORRENT_EXPORT invalid_encoding: std::exception
 	{
+		// hidden
 		virtual const char* what() const throw() { return "invalid bencoding"; }
 	};
+#endif
 
 	namespace detail
 	{
@@ -253,11 +256,11 @@ namespace libtorrent
 			// integer
 			case 'i':
 				{
-				++in; // 'i' 
+				++in; // 'i'
 				std::string val = read_until(in, end, 'e', err);
 				if (err) return;
 				TORRENT_ASSERT(*in == 'e');
-				++in; // 'e' 
+				++in; // 'e'
 				ret = entry(entry::int_t);
 				char* end_pointer;
 				ret.integer() = strtoll(val.c_str(), &end_pointer, 10);
@@ -316,7 +319,7 @@ namespace libtorrent
 					entry key;
 					bdecode_recursive(in, end, key, err, depth + 1);
 					if (err || key.type() != entry::string_t)
-					{	
+					{
 #ifdef TORRENT_DEBUG
 						ret.m_type_queried = false;
 #endif
@@ -387,7 +390,7 @@ namespace libtorrent
 			}
 		}
 	}
-	
+
 	// These functions will encode data to bencoded_ or decode bencoded_ data.
 	// 
 	// If possible, lazy_bdecode() should be preferred over ``bdecode()``.
@@ -429,7 +432,7 @@ namespace libtorrent
 	// Now we just need to know how to retrieve information from the entry.
 	// 
 	// If ``bdecode()`` encounters invalid encoded data in the range given to it
-	// it will throw libtorrent_exception.
+	// it will return a default constructed ``entry`` object.
 	template<class OutIt> int bencode(OutIt out, const entry& e)
 	{
 		return detail::bencode_recursive(out, e);

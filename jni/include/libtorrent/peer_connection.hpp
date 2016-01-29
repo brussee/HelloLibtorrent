@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2003-2014, Arvid Norberg
+Copyright (c) 2003-2016, Arvid Norberg
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -429,7 +429,7 @@ namespace libtorrent
 		{
 			// this peer is in end-game mode we only want
 			// one outstanding request
-			return m_endgame_mode ? 1: m_desired_queue_size;
+			return (m_endgame_mode || m_snubbed) ? 1 : m_desired_queue_size;
 		}
 
 		bool bittyrant_unchoke_compare(
@@ -609,10 +609,8 @@ namespace libtorrent
 
 		int receive_pos() const { return m_recv_pos; }
 
-		void max_out_request_queue(int s)
-		{ m_max_out_request_queue = s; }
-		int max_out_request_queue() const
-		{ return m_max_out_request_queue; }
+		void max_out_request_queue(int s);
+		int max_out_request_queue() const;
 
 #ifdef TORRENT_DEBUG
 		bool piece_failed;
@@ -802,6 +800,12 @@ namespace libtorrent
 		// order to know which torrent it belongs to, to know which
 		// other peers to compare it to.
 		bool m_exceeded_limit:1;
+
+		// this is slow-start at the bittorrent layer. It affects how we increase
+		// desired queue size (i.e. the number of outstanding requests we keep).
+		// While the underlying transport protocol is in slow-start, the number of
+		// outstanding requests need to increase at the same pace to keep up.
+		bool m_slow_start:1;
 
 		// TODO: make these private as well
 	protected:
@@ -1027,6 +1031,12 @@ namespace libtorrent
 		// extended.
 		int m_timeout_extend;
 
+		// the number of payload bytes downloaded last second tick
+		boost::int32_t m_downloaded_last_second;
+
+		// the number of payload bytes uploaded last second tick
+		boost::int32_t m_uploaded_last_second;
+
 		// the number of bytes that the other
 		// end has to send us in order to respond
 		// to all outstanding piece requests we
@@ -1147,6 +1157,11 @@ namespace libtorrent
 		// was called. The rtt is specified in milliseconds
 		boost::uint16_t m_rtt;
 
+		// the number of request we should queue up
+		// at the remote end.
+		// TODO: 2 rename this target queue size
+		boost::uint16_t m_desired_queue_size;
+
 #ifndef TORRENT_DISABLE_RESOLVE_COUNTRIES	
 		// in case the session settings is set
 		// to resolve countries, this is set to
@@ -1163,10 +1178,6 @@ namespace libtorrent
 		// are preferred.
 		boost::uint8_t m_prefer_whole_pieces;
 		
-		// the number of request we should queue up
-		// at the remote end.
-		boost::uint8_t m_desired_queue_size;
-
 		// if this is true, the disconnection
 		// timestamp is not updated when the connection
 		// is closed. This means the time until we can
