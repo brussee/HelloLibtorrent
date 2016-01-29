@@ -15,6 +15,20 @@
 LOCAL_PATH := $(call my-dir)
 
 # ------------------------------------------
+# Define prebuilt shared libboost python library
+include $(CLEAR_VARS)
+LOCAL_MODULE    := libboost_python
+LOCAL_SRC_FILES := libs/libboost_python.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+# ------------------------------------------
+# Define prebuilt shared libboost system library
+include $(CLEAR_VARS)
+LOCAL_MODULE    := libboost_system
+LOCAL_SRC_FILES := libs/libboost_system.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+# ------------------------------------------
 # Define prebuilt shared libtorrent library
 include $(CLEAR_VARS)
 LOCAL_MODULE    := libtorrent
