@@ -3,7 +3,7 @@ rm -rf bin &&
 rm -rf libs &&
 rm -rf obj &&
 rm -rf gen &&
-ndk-build clean &&
-ndk-build &&
+/opt/android-ndk-r10e/ndk-build clean &&
+/opt/android-ndk-r10e/ndk-build &&
 ant clean &&
 ant debug 
