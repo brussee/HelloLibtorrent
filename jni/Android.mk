@@ -17,8 +17,8 @@ LOCAL_PATH := $(call my-dir)
 # ------------------------------------------
 # Define prebuilt shared libtorrent library
 include $(CLEAR_VARS)
-LOCAL_MODULE    := libtorrent-rasterbar
-LOCAL_SRC_FILES := libs/libtorrent-rasterbar.so
+LOCAL_MODULE    := libtorrent
+LOCAL_SRC_FILES := libs/libtorrent.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 # ------------------------------------------
@@ -40,7 +40,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_SRC_FILES  := hello.cpp
 
-LOCAL_SHARED_LIBRARIES := libtorrent-rasterbar
+LOCAL_SHARED_LIBRARIES := libtorrent
 
 include $(BUILD_SHARED_LIBRARY)
 
