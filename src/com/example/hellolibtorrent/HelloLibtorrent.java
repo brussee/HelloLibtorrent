@@ -59,6 +59,9 @@ public class HelloLibtorrent extends Activity {
      * already been included. 
      */
     static {
+        System.loadLibrary("python2.7");
+        System.loadLibrary("boost_system");
+        System.loadLibrary("boost_python");
 	    System.loadLibrary("torrent");
         System.loadLibrary("hello");
     }

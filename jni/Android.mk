@@ -15,6 +15,13 @@
 LOCAL_PATH := $(call my-dir)
 
 # ------------------------------------------
+# Define prebuilt shared python library
+include $(CLEAR_VARS)
+LOCAL_MODULE    := libpython
+LOCAL_SRC_FILES := libs/libpython2.7.so
+include $(PREBUILT_SHARED_LIBRARY)
+
+# ------------------------------------------
 # Define prebuilt shared libboost python library
 include $(CLEAR_VARS)
 LOCAL_MODULE    := libboost_python
@@ -40,21 +47,11 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 LOCAL_MODULE     := hello
 
-LOCAL_CFLAGS     := -DBOOST_ASIO_HASH_MAP_BUCKETS=1021 \
-                    -DBOOST_FILESYSTEM_VERSION=3 \
-                    -DUNICODE \
-                    -DWITH_SHIPPED_GEOIP_H \
-                    -DTORRENT_BUILDING_STATIC \
-                    -DBOOST_ASIO_SEPARATE_COMPILATION \
-                    -DBOOST_ASIO_ENABLE_CANCELIO \
-                    -DTORRENT_USE_ICONV=0 \
-                    -DTORRENT_USE_TOMMATH
-
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_SRC_FILES  := hello.cpp
 
-LOCAL_SHARED_LIBRARIES := libtorrent
+LOCAL_SHARED_LIBRARIES := libtorrent libboost_system libboost_python libpython
 
 include $(BUILD_SHARED_LIBRARY)
 
