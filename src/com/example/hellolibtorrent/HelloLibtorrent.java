@@ -59,7 +59,7 @@ public class HelloLibtorrent extends Activity {
      * already been included. 
      */
     static {
-	    System.loadLibrary("torrent");
+        System.loadLibrary("torrent");
         System.loadLibrary("hello");
     }
 }

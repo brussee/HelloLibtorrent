@@ -27,8 +27,8 @@ libtorrent::torrent_handle h;
 jstring Java_com_example_hellolibtorrent_HelloLibtorrent_startTorrent( JNIEnv* env, jobject thiz ) {
 	std::string result = "";
 
-	try {
-		s.listen_on(std::make_pair(6881, 6889));
+    try {
+    	s.listen_on(std::make_pair(6881, 6889));
     	p.save_path = save_location;
     	p.ti = new libtorrent::torrent_info(torrent_file);
     	h = s.add_torrent(p);
@@ -63,4 +63,3 @@ jstring Java_com_example_hellolibtorrent_HelloLibtorrent_getStatus( JNIEnv* env,
 	
 	return env->NewStringUTF(result.str().c_str());
 }
-

@@ -67,14 +67,15 @@ auxiliary.show.customizer.message=<message>
                     <ide-action name="test"/>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/3">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">/opt/android-sdk-linux/platforms/android-16/android.jar</classpath>
+                <classpath mode="compile">/opt/android-sdk-linux/platforms/android-21/android.jar</classpath>
                 <built-to>bin</built-to>
                 <javadoc-built-to>doc</javadoc-built-to>
-                <source-level>1.6</source-level>
+                <source-level>1.7</source-level>
             </compilation-unit>
         </java-data>
     </configuration>
