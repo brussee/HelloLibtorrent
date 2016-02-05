@@ -14,19 +14,6 @@
 #
 LOCAL_PATH := $(call my-dir)
 
-# ------------------------------------------
-# Define prebuilt shared python library
-include $(CLEAR_VARS)
-LOCAL_MODULE    := libpython
-LOCAL_SRC_FILES := libs/libpython2.7.so
-include $(PREBUILT_SHARED_LIBRARY)
-
-# ------------------------------------------
-# Define prebuilt shared libboost python library
-include $(CLEAR_VARS)
-LOCAL_MODULE    := libboost_python
-LOCAL_SRC_FILES := libs/libboost_python.so
-include $(PREBUILT_SHARED_LIBRARY)
 
 # ------------------------------------------
 # Define prebuilt shared libboost system library
@@ -51,7 +38,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_SRC_FILES  := hello.cpp
 
-LOCAL_SHARED_LIBRARIES := libtorrent libboost_system libboost_python libpython
+LOCAL_SHARED_LIBRARIES := libtorrent libboost_system
 
 include $(BUILD_SHARED_LIBRARY)
 
