@@ -20,6 +20,7 @@ char* save_location = "/storage/emulated/0/Torrents/";
 libtorrent::session s;
 libtorrent::add_torrent_params p;
 libtorrent::torrent_handle h;
+libtorrent::error_code ec;
 
 /* 
  * Starts downloading the torrent and returns the path of the torrent file we are downloading
@@ -28,7 +29,7 @@ jstring Java_com_example_hellolibtorrent_HelloLibtorrent_startTorrent( JNIEnv* e
 	std::string result = "";
 
     try {
-    	s.listen_on(std::make_pair(6881, 6889));
+    	s.listen_on(std::make_pair(6881, 6889), ec);
     	p.save_path = save_location;
     	p.ti = new libtorrent::torrent_info(torrent_file);
     	h = s.add_torrent(p);
