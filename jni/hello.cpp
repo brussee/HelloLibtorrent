@@ -15,8 +15,8 @@ extern "C" {
 }
 
 // Set variables
-char* torrent_file = "/storage/emulated/0/Torrents/ubuntu-15.10-desktop-amd64.iso.torrent";
-char* save_location = "/storage/emulated/0/Torrents/";
+const char* torrent_file = "/storage/emulated/0/Torrents/ubuntu-15.10-desktop-amd64.iso.torrent";
+const char* save_location = "/storage/emulated/0/Torrents/";
 libtorrent::session s;
 libtorrent::add_torrent_params p;
 libtorrent::torrent_handle h;
