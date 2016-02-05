@@ -59,7 +59,11 @@ public class HelloLibtorrent extends Activity {
      * already been included. 
      */
     static {
-        System.loadLibrary("torrent");
+    	//System.load("/data/data/com.example.hellolibtorrent/lib/libcrypto.so");
+    	//System.load("/data/data/com.example.hellolibtorrent/lib/libssl.so");
+    	//System.loadLibrary("crypto");
+        //System.loadLibrary("ssl");
+    	System.loadLibrary("torrent");
         System.loadLibrary("hello");
     }
 }

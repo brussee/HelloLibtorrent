@@ -14,6 +14,19 @@
 #
 LOCAL_PATH := $(call my-dir)
 
+# ------------------------------------------
+# Define prebuilt shared openssl crypto library
+#include $(CLEAR_VARS)
+#LOCAL_MODULE    := libcrypto
+#LOCAL_SRC_FILES := libs/libcrypto.so
+#include $(PREBUILT_SHARED_LIBRARY)
+
+# ------------------------------------------
+# Define prebuilt shared openssl library
+#include $(CLEAR_VARS)
+#LOCAL_MODULE    := libssl
+#LOCAL_SRC_FILES := libs/libssl.so
+#include $(PREBUILT_SHARED_LIBRARY)
 
 # ------------------------------------------
 # Define prebuilt shared python library
@@ -52,7 +65,12 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/include
 
 LOCAL_SRC_FILES  := hello.cpp
 
-LOCAL_SHARED_LIBRARIES := libtorrent libboost_system libboost_python libpython2.7
+LOCAL_SHARED_LIBRARIES := libtorrent \
+						  libboost_system \
+						  libboost_python \
+						  libpython2.7 #\
+						  #libssl \
+						  #libcrypto
 
 include $(BUILD_SHARED_LIBRARY)
 
